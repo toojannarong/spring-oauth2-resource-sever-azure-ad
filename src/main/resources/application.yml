@@ -1,0 +1,11 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: https://login.microsoftonline.com/caae9d2d-37ab-4d33-9bce-e2f87b054638/discovery/v2.0/keys
+#          issuer-uri: https://login.microsoftonline.com/caae9d2d-37ab-4d33-9bce-e2f87b054638/v2.0
+
+logging:
+  level:
+    root: DEBUG
