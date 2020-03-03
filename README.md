@@ -1,0 +1,1 @@
+# spring-oauth2-resource-sever-azure-ad
