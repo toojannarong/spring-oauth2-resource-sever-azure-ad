@@ -6,6 +6,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -15,39 +16,39 @@ import java.util.Collection;
 
 import static java.util.stream.Collectors.toList;
 
-@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableWebSecurity
 public class DirectlyConfiguredJwkSetUri extends WebSecurityConfigurerAdapter {
+
+
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .authorizeRequests()
-                .anyRequest().authenticated()
-                .and()
-                .oauth2ResourceServer()
-                .jwt()
-                .jwtAuthenticationConverter(grantedAuthoritiesExtractor());
+                .authorizeRequests(authorizeRequests ->
+                        authorizeRequests
+                                .anyRequest().permitAll()
+                )
+                .oauth2ResourceServer(this::jwt);
+
+
+    }
+
+    private void jwt(OAuth2ResourceServerConfigurer<HttpSecurity> httpSecurityOAuth2ResourceServerConfigurer) {
+        httpSecurityOAuth2ResourceServerConfigurer.jwt().jwtAuthenticationConverter(grantedAuthoritiesExtractor());
     }
 
     private Converter<Jwt, AbstractAuthenticationToken> grantedAuthoritiesExtractor() {
-        JwtAuthenticationConverter jwtAuthenticationConverter =
-                new JwtAuthenticationConverter();
-
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter
-                (new GrantedAuthoritiesExtractor());
-
-        return jwtAuthenticationConverter;
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(DirectlyConfiguredJwkSetUri::convert);
+        return converter;
     }
 
-    private class GrantedAuthoritiesExtractor implements Converter<Jwt, Collection<GrantedAuthority>> {
-        @Override
-        public Collection<GrantedAuthority> convert(Jwt jwt) {
-            Collection<String> authorities = (Collection<String>)
-                    jwt.getClaims().get("roles");
-
-            return authorities.stream()
-                    .map(SimpleGrantedAuthority::new)
-                    .collect(toList());
-        }
+    private static Collection<GrantedAuthority> convert(Jwt jwt) {
+        return ((Collection<String>)
+                jwt.getClaims().get("roles")).stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(toList());
     }
+
+
 }
 
