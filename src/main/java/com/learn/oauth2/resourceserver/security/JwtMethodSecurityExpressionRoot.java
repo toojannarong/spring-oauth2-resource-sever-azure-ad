@@ -38,7 +38,7 @@ public class JwtMethodSecurityExpressionRoot extends SecurityExpressionRoot impl
         .anyMatch(requiredRoleList::contains);
 
     if (!hasApplicationRole) {
-      log.warn("Unauthorized access: [{}], required application role: {}, actual roles: {}", requiredRoles, userRoles);
+      log.warn("Unauthorized access: [{}], required application role: {}, actual roles: {}", Arrays.toString(requiredRoles), userRoles);
     }
     return hasApplicationRole;
   }

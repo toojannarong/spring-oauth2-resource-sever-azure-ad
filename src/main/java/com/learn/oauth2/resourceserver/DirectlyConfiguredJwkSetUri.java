@@ -21,7 +21,6 @@ public class DirectlyConfiguredJwkSetUri extends WebSecurityConfigurerAdapter {
                 .jwt()
         );
 
-
   }
 
 
